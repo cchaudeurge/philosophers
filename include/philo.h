@@ -27,16 +27,21 @@ typedef struct	s_philo
 typedef struct	s_sim
 {
 	int				nb_of_philo;
-	long				time_to_die;
-	long				time_to_eat;
-	long				time_to_sleep;
+	long			time_to_die;
+	long			time_to_eat;
+	long			time_to_sleep;
 	int				min_nb_meals;
-	long				start_time;
+	long			start_time;
 	int				stop;
 	pthread_mutex_t	stop_mutex;
 	pthread_mutex_t	print_mutex;
 	t_philo			*philos;
 	t_fork			*forks;
 }	t_sim;
+
+/*init.c*/
+int			init_sim(t_sim *sim, char **argv);
+long long	get_time_ms(void);
+
 
 #endif

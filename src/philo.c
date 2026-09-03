@@ -21,6 +21,6 @@ int	main(int argc, char **argv)
 
 	if (argc != 5 && argc != 6)
 		return (usage_error());
-	(void)argv;
+	init_sim(&sim, argv);
 	return (0);
 }
