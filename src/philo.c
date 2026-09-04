@@ -17,10 +17,13 @@ static int	usage_error(void)
 
 int	main(int argc, char **argv)
 {
-	//t_sim	sim;
+	t_sim	sim;
 
 	if (argc != 5 && argc != 6)
 		return (usage_error());
-	init_sim(&sim, argv);
+	if (initiate_simulation(&sim, argv) != 0)
+		return (1);
+	if (init_threads(&sim) != 0)
+		return (1);
 	return (0);
 }

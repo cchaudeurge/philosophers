@@ -1,38 +1,7 @@
-#include "../include/philo.c"
-
-static long long	ft_atoll(const char *str)
-{
-	long long	nbr;
-	long long	sign;
-
-	nbr = 0;
-	sign = 1;
-	while (*str == 32 || (*str >= 9 && *str <= 13))
-		str++;
-	if (*str == '+' || *str == '-')
-	{
-		if (*str == '-')
-			sign = -sign;
-		str++;
-	}
-	while (ft_isdigit(*str))
-	{
-		nbr = nbr * 10 + (*str - '0');
-		str++;
-	}
-	return (nbr * sign);
-}
-
-long long	get_time_ms(void)
-{
-	struct timeval	tv;
-
-	gettimeofday(&tv, NULL);
-	return ((long long)tv.tv_sec * 1000 + tv.tv_usec / 1000);
-}
+#include "../include/philo.h"
 
 //Should S_T be at the beginning?
-int	init_sim(t_sim *sim, char **argv)
+static int	init_sim(t_sim *sim, char **argv)
 {
 	sim->nb_of_philo = ft_atoll(argv[1]);
 	sim->time_to_die = ft_atoll(argv[2]);
@@ -43,19 +12,87 @@ int	init_sim(t_sim *sim, char **argv)
 	else
 		sim->min_nb_meals = -1;
 	sim->start_time = get_time_ms();
-	sim->philos = (t_philo *)malloc(sim->nb_of_philo * sizeof(t_philo));
+	sim->philos = malloc(sim->nb_of_philo * sizeof(*sim->philos));
 	if (!sim->philos)
-		return (1);
-	sim->forks  = (t_fork *)malloc(sim->nb_of_philo * sizeof(t_fork));
+		return (print_error(malloc_err));
+	sim->forks  = malloc(sim->nb_of_philo * sizeof(sim->forks));
 	if (!sim->forks)
-		return (free(sim->philos), 1);
+		return (free(sim->philos), print_error(malloc_err));
 	sim->stop = 0;
 	if (pthread_mutex_init(&sim->stop_mutex, NULL) != 0)
-		return (free(sim->philos), free(sim->forks), 1);
+		return (free(sim->philos), free(sim->forks), print_error(mutex_err));
 	if (pthread_mutex_init(&sim->print_mutex, NULL) != 0)
 	{
 		pthread_mutex_destroy(&sim->stop_mutex);
-		return (free(sim->philos), free(sim->forks), 1);
+		return (free(sim->philos), free(sim->forks), print_error(mutex_err));
 	}
 	return (0);
 }
+
+static void	init_philos(t_sim *sim)
+{
+	int	i;
+
+	i = 0;
+	while (i < sim->nb_of_philo)
+	{
+		sim->philos[i].id = i + 1;
+		sim->philos[i].last_meal = sim->start_time;
+		sim->philos[i].meals_eaten = 0;
+		sim->philos[i].left_fork = &sim->forks[i];
+		sim->philos[i].right_fork = &sim->forks[(i + 1) % sim->nb_of_philo];
+		sim->philos[i].sim = sim;
+		i++;
+	}
+}
+
+static int	init_forks(t_sim *sim)
+{
+	int	i;
+
+	i = 0;
+	while (i < sim->nb_of_philo)
+	{
+		if (pthread_mutex_init(&sim->forks[i].mutex, NULL) != 0)
+		{
+			while (--i >= 0)
+				pthread_mutex_destroy(&sim->forks[i].mutex);
+			return (print_error(mutex_error));
+		}
+		i++;
+	}
+	return (0);
+}
+
+int	initiate_simulation(t_sim *sim, char **argv)
+{
+	if (init_sim(sim, argv) != 0)
+		return (1);
+	init_philos(sim);
+	if (init_forks(sim) != 0)
+	{
+		cleanup_sim(sim);
+		return (1);
+	}
+	return (0);
+}
+
+int	init_threads(t_sim *sim)
+{
+	int	i;
+
+	if (pthread_create(&sim->monitor, NULL, monitor_routine, sim) != 0)
+		return (print_error(thread_err));
+	i = 0;
+	while (i < sim-> nb_of_philo)
+	{
+		if (pthread_create(&sim->philos[i].thread, NULL, philo_routine,
+			&sim->philos[i]) != 0)
+		{
+			while (--i >= 0)
+				pthread_join(&sim->forks[i].mutex);
+			return (print_error(mutex_error));
+		}
+		i++;
+	}
+	return (0);
