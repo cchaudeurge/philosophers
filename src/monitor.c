@@ -1,12 +1,25 @@
 #include "../include/philo.h"
 
+static int	check_enough_meals(t_sim *sim)
+{
+	int	enough_meals;
+
+	pthread_mutex_lock(&sim->meal_nb_mutex);
+	if (sim->enough_meals == sim->nb_of_philo)
+		enough_meals = 1;
+	else
+		enough_meals = 0;
+	pthread_mutex_unlock(&sim->meal_nb_mutex);
+	return (enough_meals);
+}
+
 int	check_state(t_philo philo)
 {
 	t_sim	*sim;
 
 	sim = philo.sim;
 	pthread_mutex_lock(&philo.meal_mutex);
-	if (sim->enough_meals == sim->nb_of_philo)
+	if (check_enough_meals(sim) == 1)
 	{
 		pthread_mutex_lock(&sim->print_stop_mutex);
 		sim->stop = 1;
@@ -25,7 +38,6 @@ int	check_state(t_philo philo)
 	}
 	return (0);
 }
-	
 
 /*void	set_stop(t_sim *sim)
 {

@@ -39,6 +39,7 @@ typedef struct	s_sim
 	long long		time_to_sleep;
 	int				min_nb_meals;
 	int				enough_meals;
+	pthread_mutex_t	meal_nb_mutex;
 	long long		start_time;
 	int				stop;
 	pthread_mutex_t	print_stop_mutex;

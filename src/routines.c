@@ -30,12 +30,16 @@ void	*mult_philo_rout(t_philo *philo, t_fork *first_fork, t_fork *second_fork)
 		}
 		pthread_mutex_lock(&philo->meal_mutex);
 		philo->last_meal = get_time_ms();
-		philo->meals_eaten++;
-		if (philo->meals_eaten == philo->sim->min_nb_meals)
-			philo->sim->enough_meals++;
 		print_status(philo, "is eating");
 		pthread_mutex_unlock(&philo->meal_mutex);
 		ft_wait(philo->sim->time_to_eat);
+		philo->meals_eaten++;
+		if (philo->meals_eaten == philo->sim->min_nb_meals)
+		{
+			pthread_mutex_lock(&philo->sim->meal_nb_mutex);
+			philo->sim->enough_meals++;
+			pthread_mutex_unlock(&philo->sim->meal_nb_mutex);
+		}
 		release_forks(first_fork, second_fork);
 		if (print_status(philo, "is sleeping") != 0)
 			break ;
@@ -55,27 +59,29 @@ void	*philo_routine(void *arg)
 	philo = (t_philo *)arg;
 	if (philo->sim->nb_of_philo == 1)
 		return (one_philo_rout(philo));
-	if (philo->id % 2 == 0)
-	{
-		first_fork = philo->left_fork;
-		second_fork = philo->right_fork;
-	}
-	else
-	{
-		ft_wait(1);
-		first_fork = philo->right_fork;
-		second_fork = philo->left_fork;
-	}
-//	if (philo->id < philo->sim->nb_of_philo)
+//	if (philo->id % 2 == 0)
 //	{
 //		first_fork = philo->left_fork;
 //		second_fork = philo->right_fork;
 //	}
 //	else
 //	{
+//		ft_wait(1);
 //		first_fork = philo->right_fork;
 //		second_fork = philo->left_fork;
 //	}
+//	if (philo->id < philo->sim->nb_of_philo)
+//	{
+	first_fork = philo->left_fork;
+	second_fork = philo->right_fork;
+//	}
+//	else
+//	{
+//		first_fork = philo->right_fork;
+//		second_fork = philo->left_fork;
+//	}
+	if (philo->id % 2 == 0)
+		ft_wait(1);
 	return (mult_philo_rout(philo, first_fork, second_fork));
 }
 
