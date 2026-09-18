@@ -21,9 +21,13 @@ int	main(int argc, char **argv)
 
 	if (argc != 5 && argc != 6)
 		return (usage_error());
+	if (argc == 6 && ft_atoll(argv[5]) == 0)
+		return (0);
 	if (initiate_simulation(&sim, argv) != 0)
 		return (1);
 	if (init_threads(&sim) != 0)
-		return (1);
+		return (cleanup_data(&sim));
+	join_threads(&sim);
+	cleanup_data(&sim);
 	return (0);
 }

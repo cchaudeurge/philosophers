@@ -21,13 +21,14 @@ typedef struct s_sim	t_sim;
 
 typedef struct	s_philo
 {
-	int			id;
-	pthread_t	thread;
-	long long	last_meal;
-	int			meals_eaten;
-	t_fork		*left_fork;
-	t_fork		*right_fork;
-	t_sim		*sim;
+	int				id;
+	pthread_t		thread;
+	long long		last_meal;
+	int				meals_eaten;
+	pthread_mutex_t	meal_mutex;
+	t_fork			*left_fork;
+	t_fork			*right_fork;
+	t_sim			*sim;
 }	t_philo;
 
 typedef struct	s_sim
@@ -37,10 +38,10 @@ typedef struct	s_sim
 	long long		time_to_eat;
 	long long		time_to_sleep;
 	int				min_nb_meals;
+	int				enough_meals;
 	long long		start_time;
 	int				stop;
-	pthread_mutex_t	stop_mutex;
-	pthread_mutex_t	print_mutex;
+	pthread_mutex_t	print_stop_mutex;
 	t_philo			*philos;
 	t_fork			*forks;
 	pthread_t		monitor;
@@ -53,13 +54,26 @@ typedef enum	s_err_type
 	thread_err
 }	t_err_type;
 
-/*init.c*/
+/*init_data.c*/
 int			initiate_simulation(t_sim *sim, char **argv);
+/*threads.c*/
+int			init_threads(t_sim *sim);
+void		join_threads(t_sim *sim);
 /*utils.c*/
 long long	get_time_ms(void);
 long long	ft_atoll(const char *str);
-/*errors.c*/
-int	print_error(t_err_type type);
-void	cleanup_sim(t_sim *sim);
+int			print_status(t_philo *philo, char *msg);
+void		ft_wait(long long time_to_wait);
+/*cleanup_and_errors.c*/
+int			print_error(t_err_type type);
+void		cleanup_sim(t_sim *sim);
+void		destroy_forks(t_sim	*sim);
+int			cleanup_data(t_sim *sim);
+void		cleanup_philos(t_sim *sim);
+/*routines.c*/
+void		*philo_routine(void *arg);
+void		*monitor_routine(void *arg);
+/*monitor.c*/
+int			check_state(t_philo philo);
 
 #endif
