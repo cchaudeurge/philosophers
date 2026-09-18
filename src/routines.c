@@ -62,6 +62,7 @@ void	*philo_routine(void *arg)
 	}
 	else
 	{
+		ft_wait(1);
 		first_fork = philo->right_fork;
 		second_fork = philo->left_fork;
 	}
