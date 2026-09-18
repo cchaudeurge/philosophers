@@ -5,7 +5,7 @@ long long	get_time_ms(void)
 	struct timeval	tv;
 
 	gettimeofday(&tv, NULL);
-	return ((long long)tv.tv_sec * 1000 + tv.tv_usec / 1000);
+	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
 }
 
 long long	ft_atoll(const char *str)
@@ -54,7 +54,7 @@ void	ft_wait(long long time_to_wait)
 	time_current = time_start;
 	while (time_current - time_start < time_to_wait)
 	{
-		usleep(20);
+		usleep(60);
 		time_current = get_time_ms();
 	}
 }

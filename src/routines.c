@@ -31,8 +31,8 @@ void	*mult_philo_rout(t_philo *philo, t_fork *first_fork, t_fork *second_fork)
 		pthread_mutex_lock(&philo->meal_mutex);
 		philo->last_meal = get_time_ms();
 		philo->meals_eaten++;
-		if (philo->meals_eaten == philo->sim->min_nb_meals)
-			philo->sim->enough_meals++;
+//		if (philo->meals_eaten == philo->sim->min_nb_meals)
+//			philo->sim->enough_meals++;
 		print_status(philo, "is eating");
 		pthread_mutex_unlock(&philo->meal_mutex);
 		ft_wait(philo->sim->time_to_eat);
